@@ -1,0 +1,24 @@
+from sklearn.linear_model import LinearRegression
+
+# Sample Sales Data (Yearly Sales in Thousands)
+sales_data = {
+    'Year': [2018, 2019, 2020, 2021, 2022],
+    'Sales': [200, 250, 270, 300, 320]
+}
+df = pd.DataFrame(sales_data)
+
+# Features & Target
+X = df[['Year']]
+y = df['Sales']
+
+# Train Linear Regression Model
+model = LinearRegression()
+model.fit(X, y)
+
+# Predict Future Sales (2023, 2024, 2025)
+future_years = np.array([[2023], [2024], [2025]])
+future_sales = model.predict(future_years)
+
+# Display Predictions
+for year, sale in zip(future_years.flatten(), future_sales):
+    print(f"Predicted Sales for {year}: {sale:.2f}")

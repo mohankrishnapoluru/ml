@@ -1,0 +1,71 @@
+import pandas as pd
+
+def load_data(file_path):
+    """Loads training data from a CSV file."""
+    df = pd.read_csv(file_path)
+    attributes = df.iloc[:, :-1].values  # Extract attributes
+    labels = df.iloc[:, -1].values  # Extract class labels
+    return attributes, labels
+
+def initialize_hypotheses(num_attributes):
+    """Initialize S (most specific) and G (most general) hypotheses."""
+    S = ["ϕ"] * num_attributes  # Start with the most specific hypothesis
+    G = [["?"] * num_attributes]  # Start with the most general hypothesis
+    return S, G
+
+def update_specific_hypothesis(S, example):
+    """Generalizes S to include the current positive example."""
+    for i in range(len(S)):
+        if S[i] == "ϕ":  # Replace first time
+            S[i] = example[i]
+        elif S[i] != example[i]:
+            S[i] = "?"
+    return S
+
+def update_general_hypothesis(G, S, example):
+    """Refines G to exclude negative examples while keeping it general."""
+    G_new = []
+    for g in G:
+        for i in range(len(g)):
+            if g[i] != "?" and g[i] != example[i]:
+                new_hypothesis = g[:]
+                new_hypothesis[i] = "?"
+                if is_more_general(new_hypothesis, S):
+                    G_new.append(new_hypothesis)
+    return G_new if G_new else [["?"] * len(S)]  # Avoid empty G
+
+def is_more_general(h1, h2):
+    """Checks if h1 is more general than or equal to h2."""
+    for i in range(len(h1)):
+        if h1[i] != "?" and (h2[i] == "ϕ" or h1[i] != h2[i]):
+            return False
+    return True
+
+def candidate_elimination(file_path):
+    """Runs the Candidate-Elimination Algorithm on a given dataset."""
+    attributes, labels = load_data(file_path)
+    num_attributes = len(attributes[0])
+
+    S, G = initialize_hypotheses(num_attributes)
+
+    for i in range(len(attributes)):
+        example = attributes[i]
+        label = labels[i]
+
+        if label == "Yes":  # Positive Example
+            S = update_specific_hypothesis(S, example)
+            G = [g for g in G if is_more_general(g, S)]
+        else:  # Negative Example
+            G = update_general_hypothesis(G, S, example)
+
+    return S, G
+
+def main():
+    file_path = input("Enter the path to the CSV file: ")  # User provides CSV file path
+    S, G = candidate_elimination(file_path)
+    
+    print("\nFinal Specific Hypothesis (S):", S)
+    print("\nFinal General Hypotheses (G):", G)
+
+if __name__ == "__main__":
+    main()

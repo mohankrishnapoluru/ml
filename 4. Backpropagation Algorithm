@@ -1,0 +1,101 @@
+import numpy as np
+
+class NeuralNetwork:
+    def __init__(self, input_size, hidden_size, output_size, learning_rate=0.5):
+        """Initialize weights and biases randomly."""
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.learning_rate = learning_rate
+
+        # Initialize weights with small random values
+        self.W1 = np.random.uniform(-1, 1, (self.hidden_size, self.input_size))
+        self.b1 = np.random.uniform(-1, 1, (self.hidden_size, 1))
+        self.W2 = np.random.uniform(-1, 1, (self.output_size, self.hidden_size))
+        self.b2 = np.random.uniform(-1, 1, (self.output_size, 1))
+
+    def sigmoid(self, x):
+        """Sigmoid activation function."""
+        return 1 / (1 + np.exp(-x))
+
+    def sigmoid_derivative(self, x):
+        """Derivative of the sigmoid function."""
+        return x * (1 - x)
+
+    def forward(self, X):
+        """Forward propagation step."""
+        self.X = X.reshape(-1, 1)  # Convert input to column vector
+        self.hidden_input = np.dot(self.W1, self.X) + self.b1
+        self.hidden_output = self.sigmoid(self.hidden_input)
+        self.final_input = np.dot(self.W2, self.hidden_output) + self.b2
+        self.final_output = self.sigmoid(self.final_input)
+        return self.final_output
+
+    def backward(self, y):
+        """Backward propagation step."""
+        y = y.reshape(-1, 1)  # Convert output to column vector
+        output_error = y - self.final_output
+        output_delta = output_error * self.sigmoid_derivative(self.final_output)
+
+        hidden_error = np.dot(self.W2.T, output_delta)
+        hidden_delta = hidden_error * self.sigmoid_derivative(self.hidden_output)
+
+        # Update weights and biases
+        self.W2 += self.learning_rate * np.dot(output_delta, self.hidden_output.T)
+        self.b2 += self.learning_rate * output_delta
+        self.W1 += self.learning_rate * np.dot(hidden_delta, self.X.T)
+        self.b1 += self.learning_rate * hidden_delta
+
+    def train(self, X_train, y_train, epochs=10000):
+        """Train the neural network with given data."""
+        for epoch in range(epochs):
+            total_loss = 0
+            for X, y in zip(X_train, y_train):
+                self.forward(X)
+                self.backward(y)
+                total_loss += np.sum((y - self.final_output) ** 2)
+
+            if epoch % 1000 == 0:
+                print(f"Epoch {epoch}: Loss = {total_loss / len(X_train)}")
+
+    def predict(self, X_test):
+        """Make predictions for given test data."""
+        predictions = []
+        for X in X_test:
+            output = self.forward(X)
+            predictions.append(1 if output > 0.5 else 0)  # Binary classification
+        return predictions
+
+# Sample Training Data (XOR Problem)
+X_train = np.array([
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1]
+])
+y_train = np.array([
+    [0],
+    [1],
+    [1],
+    [0]
+])
+
+# Initialize Neural Network (2 input neurons, 2 hidden neurons, 1 output neuron)
+nn = NeuralNetwork(input_size=2, hidden_size=2, output_size=1, learning_rate=0.5)
+
+# Train the Neural Network
+nn.train(X_train, y_train, epochs=10000)
+
+# Test on new samples
+X_test = np.array([
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1]
+])
+
+# Print predictions
+predictions = nn.predict(X_test)
+print("\nPredictions:")
+for i, x in enumerate(X_test):
+    print(f"Input: {x} -> Output: {predictions[i]}")

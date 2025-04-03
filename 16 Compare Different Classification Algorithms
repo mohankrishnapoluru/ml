@@ -1,0 +1,23 @@
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+
+# List of models
+models = {
+    "Logistic Regression": LogisticRegression(),
+    "K-Nearest Neighbors": KNeighborsClassifier(),
+    "Support Vector Machine": SVC(),
+    "Decision Tree": DecisionTreeClassifier(),
+    "Random Forest": RandomForestClassifier(),
+    "Naïve Bayes": GaussianNB()
+}
+
+# Train and Evaluate Models
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    print(f"\n{name}:")
+    print("Accuracy:", accuracy_score(y_test, y_pred))
+    print("Classification Report:\n", classification_report(y_test, y_pred))

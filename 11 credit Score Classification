@@ -1,0 +1,38 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+
+# Sample Credit Score Data (You can replace this with a real dataset)
+data = {
+    'Age': [25, 45, 35, 50, 23, 40, 60, 30, 29, 55],
+    'Income': [50000, 80000, 60000, 90000, 30000, 75000, 120000, 65000, 45000, 95000],
+    'Loan Amount': [10000, 20000, 15000, 25000, 5000, 18000, 30000, 12000, 8000, 22000],
+    'Credit Score': [1, 0, 1, 0, 1, 0, 0, 1, 1, 0]  # 1 = Good, 0 = Bad
+}
+df = pd.DataFrame(data)
+
+# Features and Target
+X = df.drop(columns=['Credit Score'])
+y = df['Credit Score']
+
+# Split into Train-Test Sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardization
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Train Logistic Regression Model
+model = LogisticRegression()
+model.fit(X_train_scaled, y_train)
+
+# Predictions
+y_pred = model.predict(X_test_scaled)
+
+# Evaluate Model
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Classification Report:\n", classification_report(y_test, y_pred))

@@ -1,0 +1,25 @@
+# Sample Mobile Price Dataset
+data = {
+    'Battery': [4000, 3500, 3000, 2500, 4500, 5000, 3200, 2800],
+    'RAM': [6, 4, 3, 2, 8, 12, 3, 4],
+    'Storage': [128, 64, 32, 32, 256, 512, 64, 32],
+    'Price Range': [2, 1, 0, 0, 3, 3, 1, 0]  # 0 = Low, 1 = Medium, 2 = High, 3 = Premium
+}
+df = pd.DataFrame(data)
+
+# Split Data
+X = df[['Battery', 'RAM', 'Storage']]
+y = df['Price Range']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Train Decision Tree Model
+from sklearn.tree import DecisionTreeClassifier
+model = DecisionTreeClassifier()
+model.fit(X_train, y_train)
+
+# Predict
+y_pred = model.predict(X_test)
+
+# Evaluate Model
+print("Mobile Price Prediction Accuracy:", accuracy_score(y_test, y_pred))
+print("Classification Report:\n", classification_report(y_test, y_pred))

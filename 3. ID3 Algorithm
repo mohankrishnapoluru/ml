@@ -1,0 +1,113 @@
+import pandas as pd
+import numpy as np
+
+class DecisionTreeID3:
+    def __init__(self):
+        self.tree = {}
+
+    def entropy(self, y):
+        """Calculates entropy of a given dataset."""
+        unique_classes, counts = np.unique(y, return_counts=True)
+        probabilities = counts / counts.sum()
+        return -np.sum(probabilities * np.log2(probabilities))
+
+    def information_gain(self, X, y, attribute_index):
+        """Computes information gain for a given attribute."""
+        total_entropy = self.entropy(y)
+        values, counts = np.unique(X[:, attribute_index], return_counts=True)
+
+        weighted_entropy = sum(
+            (counts[i] / counts.sum()) * self.entropy(y[X[:, attribute_index] == values[i]])
+            for i in range(len(values))
+        )
+
+        return total_entropy - weighted_entropy
+
+    def best_attribute(self, X, y):
+        """Finds the best attribute with the highest information gain."""
+        gains = [self.information_gain(X, y, i) for i in range(X.shape[1])]
+        return np.argmax(gains)
+
+    def build_tree(self, X, y, feature_names):
+        """Recursively builds the decision tree using ID3."""
+        if len(np.unique(y)) == 1:
+            return y[0]
+
+        if len(feature_names) == 0:
+            return np.bincount(y).argmax()
+
+        best_attr = self.best_attribute(X, y)
+        best_feature = feature_names[best_attr]
+
+        tree = {best_feature: {}}
+        feature_values = np.unique(X[:, best_attr])
+
+        for value in feature_values:
+            sub_X = X[X[:, best_attr] == value]
+            sub_y = y[X[:, best_attr] == value]
+
+            new_features = feature_names[:best_attr] + feature_names[best_attr + 1:]
+            sub_X = np.delete(sub_X, best_attr, axis=1)
+
+            tree[best_feature][value] = self.build_tree(sub_X, sub_y, new_features)
+
+        return tree
+
+    def fit(self, X, y, feature_names):
+        """Fits the model to the training data."""
+        self.tree = self.build_tree(X, y, feature_names)
+
+    def predict(self, sample):
+        """Classifies a new sample based on the trained decision tree."""
+        tree = self.tree
+        while isinstance(tree, dict):
+            attribute = list(tree.keys())[0]
+            if sample[attribute] in tree[attribute]:
+                tree = tree[attribute][sample[attribute]]
+            else:
+                return "Unknown"
+        return tree
+
+    def print_tree(self, tree=None, indent=""):
+        """Prints the decision tree in a readable format."""
+        if tree is None:
+            tree = self.tree
+
+        if isinstance(tree, dict):
+            for key, value in tree.items():
+                print(indent + str(key))
+                self.print_tree(value, indent + "  ")
+        else:
+            print(indent + "-> " + str(tree))
+
+
+# Load dataset
+data = {
+    "Outlook": ["Sunny", "Sunny", "Overcast", "Rain", "Rain", "Rain", "Overcast", "Sunny", "Sunny", "Rain", "Sunny", "Overcast", "Overcast", "Rain"],
+    "Temperature": ["Hot", "Hot", "Hot", "Mild", "Cool", "Cool", "Cool", "Mild", "Cool", "Mild", "Mild", "Mild", "Hot", "Mild"],
+    "Humidity": ["High", "High", "High", "High", "Normal", "Normal", "Normal", "High", "Normal", "Normal", "Normal", "High", "Normal", "High"],
+    "Wind": ["Weak", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak", "Weak", "Weak", "Strong", "Strong", "Weak", "Strong"],
+    "PlayTennis": ["No", "No", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "No"]
+}
+
+df = pd.DataFrame(data)
+
+# Prepare training data
+X = df.iloc[:, :-1].values  # Features
+y = np.array([1 if label == "Yes" else 0 for label in df.iloc[:, -1].values])  # Convert 'Yes' -> 1, 'No' -> 0
+feature_names = list(df.columns[:-1])
+
+# Train ID3 Decision Tree
+dt = DecisionTreeID3()
+dt.fit(X, y, feature_names)
+
+# Print the decision tree
+print("\nDecision Tree Structure:")
+dt.print_tree()
+
+# Predict a new sample
+new_sample = {"Outlook": "Sunny", "Temperature": "Cool", "Humidity": "High", "Wind": "Strong"}
+prediction = dt.predict(new_sample)
+
+# Convert numerical output back to label
+print("\nPrediction for new sample:", "Yes" if prediction == 1 else "No")

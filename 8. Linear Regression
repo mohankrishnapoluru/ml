@@ -1,0 +1,48 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+# Generate Sample Data: House Area (sq ft) vs. Price ($1000s)
+np.random.seed(42)
+X = 100 + 10 * np.random.rand(50, 1)  # House Area
+y = 50 + 5 * X + np.random.randn(50, 1) * 10  # House Price (with noise)
+
+# Convert to DataFrame
+data = pd.DataFrame(np.hstack((X, y)), columns=['House Area (sq ft)', 'Price ($1000s)'])
+
+# Split Data into Training and Testing Sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize and Train Linear Regression Model
+lr_model = LinearRegression()
+lr_model.fit(X_train, y_train)
+
+# Make Predictions
+y_pred = lr_model.predict(X_test)
+
+# Display Model Coefficients
+print(f"Intercept: {lr_model.intercept_[0]:.2f}")
+print(f"Slope (Coefficient): {lr_model.coef_[0][0]:.2f}")
+
+# Evaluate the Model
+mae = mean_absolute_error(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print(f"Mean Absolute Error (MAE): {mae:.2f}")
+print(f"Mean Squared Error (MSE): {mse:.2f}")
+print(f"R² Score: {r2:.2f}")
+
+# Plot Regression Line
+plt.figure(figsize=(8, 5))
+sns.scatterplot(x=X_test.flatten(), y=y_test.flatten(), label="Actual Data", color='blue')
+sns.lineplot(x=X_test.flatten(), y=y_pred.flatten(), label="Predicted Line", color='red')
+plt.xlabel("House Area (sq ft)")
+plt.ylabel("Price ($1000s)")
+plt.title("Linear Regression: House Area vs. Price")
+plt.legend()
+plt.show()

@@ -1,0 +1,44 @@
+def get_examples():
+    """Takes training examples as input from the user."""
+    num_attributes = int(input("Enter the number of attributes: "))
+    num_examples = int(input("Enter the number of training examples: "))
+
+    dataset = []
+    print(f"\nEnter {num_examples} training examples (attributes followed by class label):")
+    
+    for _ in range(num_examples):
+        row = input().split()
+        dataset.append(row)
+
+    return dataset, num_attributes
+
+def find_s_algorithm(dataset, num_attributes):
+    """Implements the Find-S algorithm for concept learning."""
+    hypothesis = ["ϕ"] * num_attributes  # Start with the most specific hypothesis
+
+    for example in dataset:
+        attributes = example[:-1]  # All attributes except the class label
+        label = example[-1]  # Class label
+
+        if label == "Yes":  # Process only positive examples
+            if hypothesis == ["ϕ"] * num_attributes:  # First positive example
+                hypothesis = attributes.copy()
+            else:
+                # Generalize hypothesis only where needed
+                for i in range(num_attributes):
+                    if hypothesis[i] != attributes[i]:
+                        hypothesis[i] = "?"
+
+    return hypothesis
+
+def main():
+    dataset, num_attributes = get_examples()
+    
+    # Run the FIND-S Algorithm
+    final_hypothesis = find_s_algorithm(dataset, num_attributes)
+    
+    print("\nMost specific hypothesis learned by FIND-S algorithm:")
+    print(final_hypothesis)
+
+if __name__ == "__main__":
+    main()

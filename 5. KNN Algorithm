@@ -1,0 +1,52 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from collections import Counter
+
+class KNN:
+    def __init__(self, k=3):
+        self.k = k
+
+    def fit(self, X_train, y_train):
+        """Store training data."""
+        self.X_train = X_train
+        self.y_train = y_train
+
+    def predict(self, X_test):
+        """Predict labels for test data."""
+        predictions = [self._predict(x) for x in X_test]
+        return np.array(predictions)
+
+    def _predict(self, x):
+        """Find the k-nearest neighbors and classify the sample."""
+        distances = [np.linalg.norm(x - x_train) for x_train in self.X_train]
+        k_indices = np.argsort(distances)[:self.k]  # Get indices of k nearest neighbors
+        k_nearest_labels = [self.y_train[i] for i in k_indices]
+
+        most_common = Counter(k_nearest_labels).most_common(1)
+        return most_common[0][0]
+
+# Load the Iris dataset
+from sklearn.datasets import load_iris
+iris = load_iris()
+X = iris.data  # Features
+y = iris.target  # Labels
+
+# Split data into training (80%) and testing (20%) sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize KNN model with k=3
+knn = KNN(k=3)
+knn.fit(X_train, y_train)
+
+# Predict on test set
+y_pred = knn.predict(X_test)
+
+# Calculate accuracy
+accuracy = np.mean(y_pred == y_test)
+print(f"Model Accuracy: {accuracy * 100:.2f}%")
+
+# Test with a new sample
+new_sample = np.array([[5.1, 3.5, 1.4, 0.2]])  # Example from class 'Setosa'
+predicted_class = knn.predict(new_sample)
+print(f"Predicted Class for {new_sample}: {iris.target_names[predicted_class[0]]}")

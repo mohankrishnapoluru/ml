@@ -1,0 +1,24 @@
+# Sample Bank Loan Data
+loan_data = {
+    'Income': [40000, 60000, 80000, 120000, 30000, 75000, 100000, 45000],
+    'Credit Score': [650, 700, 750, 800, 620, 680, 770, 640],
+    'Loan Amount': [10000, 20000, 15000, 25000, 5000, 18000, 30000, 12000],
+    'Approved': [1, 1, 1, 1, 0, 1, 1, 0]  # 1 = Approved, 0 = Rejected
+}
+df = pd.DataFrame(loan_data)
+
+# Train-Test Split
+X = df[['Income', 'Credit Score', 'Loan Amount']]
+y = df['Approved']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train Naïve Bayes Model
+nb_model = GaussianNB()
+nb_model.fit(X_train, y_train)
+
+# Predict
+y_pred = nb_model.predict(X_test)
+
+# Evaluate
+print("Loan Approval Accuracy:", accuracy_score(y_test, y_pred))
+print("Classification Report:\n", classification_report(y_test, y_pred))

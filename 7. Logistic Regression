@@ -1,0 +1,38 @@
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+# Load the Iris dataset
+from sklearn.datasets import load_iris
+iris = load_iris()
+X = iris.data  # Features
+y = iris.target  # Labels
+
+# Split data into training (80%) and testing (20%) sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize and train the Logistic Regression model
+lr_model = LogisticRegression(max_iter=200)
+lr_model.fit(X_train, y_train)
+
+# Predict on test data
+y_pred = lr_model.predict(X_test)
+
+# Compute Accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Model Accuracy: {accuracy * 100:.2f}%")
+
+# Generate Confusion Matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+
+# Display Confusion Matrix using Heatmap
+plt.figure(figsize=(6,5))
+sns.heatmap(conf_matrix, annot=True, cmap="Blues", fmt="d", xticklabels=iris.target_names, yticklabels=iris.target_names)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
